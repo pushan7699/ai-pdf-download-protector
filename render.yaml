@@ -1,0 +1,43 @@
+services:
+  # ── Backend API (Node.js) ─────────────────────────────────────────────────
+  - type: web
+    name: pdf-security-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DB_HOST
+        fromDatabase:
+          name: pdf-security-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: pdf-security-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: pdf-security-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: pdf-security-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: pdf-security-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://your-frontend.vercel.app   # update after Vercel deploy
+      - key: STORAGE_PATH
+        value: ./storage/private
+      - key: LOG_LEVEL
+        value: info

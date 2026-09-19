@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+/* Disable text selection on PDF viewer */
+.pdf-page {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+/* Disable right-click context menu styles */
+.no-context {
+  pointer-events: none;
+}

@@ -1,0 +1,32 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ── Environment secrets ───────────────────────────────────────────────────────
+.env
+**/.env
+!**/.env.example
+
+# ── Build output ──────────────────────────────────────────────────────────────
+frontend/dist/
+frontend/.vite/
+
+# ── Uploaded PDFs (don't commit user files) ───────────────────────────────────
+backend/storage/private/*.pdf
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+backend/logs/*.log
+*.log
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── TypeScript build artifacts ────────────────────────────────────────────────
+backend/dist/
+*.js.map
+
+# ── Test coverage ─────────────────────────────────────────────────────────────
+coverage/

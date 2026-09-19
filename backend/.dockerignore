@@ -1,0 +1,17 @@
+node_modules
+dist
+npm-debug.log
+.env
+.env.local
+.env.*.local
+*.log
+coverage
+.vscode
+.idea
+.DS_Store
+tests
+*.test.ts
+*.spec.ts
+storage/*
+!storage/private/.gitkeep
+logs/*
