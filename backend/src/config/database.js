@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const sslEnabled = process.env.DB_SSL === 'true';
+
 const pool = mysql.createPool({
   host:     process.env.DB_HOST     || 'localhost',
   port:     parseInt(process.env.DB_PORT || '3306'),
@@ -12,8 +14,11 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 20,
   queueLimit: 0,
-  // Don't convert timezone — store/read dates as-is matching MySQL server time
   timezone: 'local',
+  // Aiven and most cloud MySQL providers require SSL
+  ...(sslEnabled && {
+    ssl: { rejectUnauthorized: false }
+  }),
 });
 
 export const db = {
