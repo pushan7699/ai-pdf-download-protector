@@ -1,43 +1,38 @@
 services:
-  # ── Backend API (Node.js) ─────────────────────────────────────────────────
   - type: web
     name: pdf-security-backend
     runtime: node
     rootDir: backend
     buildCommand: npm install
     startCommand: node src/server.js
+    disk:
+      name: pdf-storage
+      mountPath: /opt/render/project/src/storage/private
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5000
-      - key: DB_HOST
-        fromDatabase:
-          name: pdf-security-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: pdf-security-db
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: pdf-security-db
-          property: database
-      - key: DB_USER
-        fromDatabase:
-          name: pdf-security-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: pdf-security-db
-          property: password
-      - key: JWT_SECRET
-        generateValue: true
-      - key: SESSION_SECRET
-        generateValue: true
-      - key: CORS_ORIGIN
-        value: https://your-frontend.vercel.app   # update after Vercel deploy
       - key: STORAGE_PATH
-        value: ./storage/private
+        value: /opt/render/project/src/storage/private
+      - key: DB_HOST
+        value: mysql-320cd914-ai-pdf-download-detector.l.aivencloud.com
+      - key: DB_PORT
+        value: 26210
+      - key: DB_NAME
+        value: defaultdb
+      - key: DB_USER
+        value: avnadmin
+      - key: DB_PASSWORD
+        value: AVNS_2pF2b_OvtMA9pzuP28c
+      - key: DB_SSL
+        value: true
+      - key: JWT_SECRET
+        value: 9f3k2m8p1x7q4n6w0e5r2t8y3u1i9o4p
+      - key: SESSION_SECRET
+        value: 5h2j9k4m7n1p3q6r8s0t2u4v6w8x1y3z
+      - key: CORS_ORIGIN
+        value: https://ai-pdf-download-protector-frontend-w7od-mvwto0vfi.vercel.app,http://localhost:3000
       - key: LOG_LEVEL
         value: info

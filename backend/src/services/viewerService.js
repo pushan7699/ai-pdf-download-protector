@@ -66,7 +66,11 @@ export class ViewerService {
       const { valid, session, document } = await this.validateSession(sessionToken);
       if (!valid || !session) throw new Error('Invalid or expired session');
 
-      if (pageNumber < 1 || pageNumber > document.page_count) {
+      if (pageNumber < 1) throw new Error('Invalid page number');
+
+      // If page_count is 0 (not yet extracted), allow the request through
+      // and validate against actual PDF page count below
+      if (document.page_count > 0 && pageNumber > document.page_count) {
         throw new Error('Invalid page number');
       }
 
