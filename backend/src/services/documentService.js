@@ -7,6 +7,7 @@ import { AccessLogModel } from '../models/AccessLog.js';
 import { logger } from '../utils/logger.js';
 import { config } from '../config/index.js';
 import { EventType } from '../types/index.js';
+import { cloudinaryService } from './cloudinaryService.js';
 
 export class DocumentService {
   constructor() {
@@ -41,11 +42,31 @@ export class DocumentService {
       await this.ensureStorageDirectory();
 
       const secureFilename = this.generateSecureFilename(file.originalname);
-      const filePath = path.join(this.storagePath, secureFilename);
+      let filePath = path.join(this.storagePath, secureFilename);
+      let cloudinaryPublicId = null;
 
-      await fs.writeFile(filePath, file.buffer);
+      // Try Cloudinary first (cloud storage), fall back to local
+      if (cloudinaryService.isConfigured()) {
+        try {
+          const result = await cloudinaryService.uploadPDF(file.buffer, secureFilename);
+          cloudinaryPublicId = result.public_id;
+          filePath = result.secure_url; // store Cloudinary URL as file_path
+          logger.info('PDF uploaded to Cloudinary', { publicId: cloudinaryPublicId });
+        } catch (err) {
+          logger.error('Cloudinary upload failed, falling back to local:', err.message);
+          await fs.writeFile(filePath, file.buffer);
+        }
+      } else {
+        // Local storage fallback
+        await fs.writeFile(filePath, file.buffer);
+      }
 
-      const metadata = await this.extractPDFMetadata(filePath);
+      // Extract page count from PDF buffer
+      let pageCount = 0;
+      try {
+        const pdfDoc = await PDFDocument.load(file.buffer);
+        pageCount = pdfDoc.getPageCount();
+      } catch { pageCount = 0; }
 
       const document = await DocumentModel.create(
         title,
@@ -53,7 +74,7 @@ export class DocumentService {
         filePath,
         file.size,
         file.mimetype,
-        metadata.pageCount,
+        pageCount,
         uploadedBy,
         description
       );

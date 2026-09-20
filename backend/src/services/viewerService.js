@@ -5,9 +5,10 @@ import { AccessLogModel } from '../models/AccessLog.js';
 import { WatermarkService } from './watermarkService.js';
 import { PermissionService } from './permissionService.js';
 import { PreventionService } from './preventionService.js';
+import { cloudinaryService } from './cloudinaryService.js';
 import { JWTUtil } from '../utils/jwt.js';
 import { logger } from '../utils/logger.js';
-import { EventType, RiskLevel } from '../types/index.js';
+import { EventType } from '../types/index.js';
 
 const watermarkService = new WatermarkService();
 const permissionService = new PermissionService();
@@ -90,15 +91,35 @@ export class ViewerService {
       // Get user info for watermark
       const userInfo = { userId, userEmail: 'user@domain.com', userName: 'User', sessionId: session.id, documentTitle: document.title };
 
-      // Extract page and add watermark
+      // Fetch PDF — from Cloudinary URL or local disk
       let pageBuffer;
       try {
-        pageBuffer = await watermarkService.extractPage(document.file_path, pageNumber);
+        const isCloudinaryUrl = document.file_path.startsWith('http');
+
+        if (isCloudinaryUrl) {
+          // Download from Cloudinary
+          const pdfBuffer = await cloudinaryService.downloadPDF(document.filename.replace('.pdf', ''));
+          pageBuffer = await watermarkService.extractPageFromBuffer(pdfBuffer, pageNumber);
+        } else {
+          // Local file
+          pageBuffer = await watermarkService.extractPage(document.file_path, pageNumber);
+        }
         pageBuffer = await watermarkService.addWatermarkToPage(pageBuffer, 1, userInfo);
       } catch (err) {
-        logger.error('Watermark error, serving plain page:', err.message);
-        const fs = await import('fs/promises');
-        pageBuffer = await fs.readFile(document.file_path);
+        logger.error('Page extraction error:', err.message);
+        // Last resort — try reading directly
+        try {
+          if (document.file_path.startsWith('http')) {
+            const resp = await fetch(document.file_path);
+            const buf = await resp.arrayBuffer();
+            pageBuffer = Buffer.from(buf);
+          } else {
+            const fs = await import('fs/promises');
+            pageBuffer = await fs.readFile(document.file_path);
+          }
+        } catch (e) {
+          throw new Error('Could not load PDF file');
+        }
       }
 
       return {

@@ -60,15 +60,19 @@ export class WatermarkService {
   }
 
   async extractPage(pdfPath, pageNumber) {
+    const pdfBuffer = await fs.readFile(pdfPath);
+    return await this.extractPageFromBuffer(pdfBuffer, pageNumber);
+  }
+
+  async extractPageFromBuffer(pdfBuffer, pageNumber) {
     try {
-      const pdfBuffer = await fs.readFile(pdfPath);
       const pdfDoc = await PDFDocument.load(pdfBuffer);
       const newDoc = await PDFDocument.create();
       const [copiedPage] = await newDoc.copyPages(pdfDoc, [pageNumber - 1]);
       newDoc.addPage(copiedPage);
       return Buffer.from(await newDoc.save());
     } catch (error) {
-      logger.error('Extract page error:', error);
+      logger.error('Extract page from buffer error:', error);
       throw error;
     }
   }
